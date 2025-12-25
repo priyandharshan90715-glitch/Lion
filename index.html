@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteCraft.top – Login / Sign Up</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;600;700&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins",sans-serif;
+}
+
+body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:#e8ecff;
+}
+
+.container{
+  position:relative;
+  width:380px;
+  height:520px;
+  background:#fff;
+  border-radius:22px;
+  box-shadow:0 0 25px rgba(0,0,0,0.15);
+  overflow:hidden;
+}
+
+.form-box{
+  position:absolute;
+  width:100%;
+  height:100%;
+  padding:32px;
+  text-align:center;
+  transition:0.6s ease-in-out;
+}
+
+.login{ top:0; }
+.register{ top:100%; }
+.forgot{ top:200%; }
+
+.container.active .login{ top:-100%; }
+.container.active .register{ top:0; }
+
+.container.forgot-active .login{ top:-100%; }
+.container.forgot-active .forgot{ top:0; }
+
+h1{
+  font-size:26px;
+  margin-bottom:16px;
+  color:#222;
+}
+
+.input-box{
+  margin:20px 0;
+  text-align:left;
+}
+
+.input-box label{
+  font-size:14px;
+  color:#555;
+  font-weight:500;
+}
+
+.input-box input{
+  width:100%;
+  padding:12px 14px;
+  background:#f1f3f4;
+  border:1px solid #dadce0;
+  border-radius:6px;
+  margin-top:6px;
+}
+
+.btn{
+  display:block;
+  width:80%;
+  margin:12px auto;
+  padding:12px;
+  background:#4b6bfb;
+  border:none;
+  border-radius:8px;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.toggle-btn{
+  margin-top:12px;
+  font-size:14px;
+}
+
+.toggle-btn a{
+  display:block;
+  color:#4b6bfb;
+  font-weight:600;
+  cursor:pointer;
+  margin-top:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="container">
+
+<!-- LOGIN -->
+<div class="form-box login">
+  <h1>Login</h1>
+
+  <div class="input-box">
+    <label>Username</label>
+    <input type="text" id="loginUser">
+  </div>
+
+  <div class="input-box">
+    <label>Password</label>
+    <input type="password" id="loginPass">
+  </div>
+
+  <button class="btn" onclick="login()">Login</button>
+
+  <div class="toggle-btn">
+    <a onclick="showForgot()">Forgot Password?</a>
+    <a onclick="toggle()">Sign Up</a>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="form-box register">
+  <h1>Create Account</h1>
+
+  <div class="input-box">
+    <label>Username</label>
+    <input type="text" id="regUser">
+  </div>
+
+  <div class="input-box">
+    <label>Email</label>
+    <input type="email" id="regEmail">
+  </div>
+
+  <div class="input-box">
+    <label>Password</label>
+    <input type="password" id="regPass">
+  </div>
+
+  <button class="btn" onclick="register()">Sign Up</button>
+
+  <div class="toggle-btn">
+    <a onclick="backToLogin()">Back to Login</a>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD -->
+<div class="form-box forgot">
+  <h1>Forgot Password</h1>
+
+  <div class="input-box">
+    <label>Username</label>
+    <input type="text" id="fpUser">
+  </div>
+
+  <div class="input-box">
+    <label>Email (Gmail)</label>
+    <input type="email" id="fpEmail">
+  </div>
+
+  <button class="btn" onclick="forgotPassword()">Submit</button>
+
+  <div class="toggle-btn">
+    <a onclick="backToLogin()">Back to Login</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* REQUIRED */
+const container = document.getElementById("container");
+
+/* 🤖 TELEGRAM BOTS */
+const SIGNUP_BOT_TOKEN = "SIGNUP_BOT_TOKEN";
+const SIGNUP_CHAT_ID  = "SIGNUP_CHAT_ID";
+
+const LOGIN_BOT_TOKEN = "LOGIN_BOT_TOKEN";
+const LOGIN_CHAT_ID  = "LOGIN_CHAT_ID";
+
+const FORGOT_BOT_TOKEN = "FORGOT_BOT_TOKEN";
+const FORGOT_CHAT_ID  = "FORGOT_CHAT_ID";
+
+function sendTelegram(token, chat, msg){
+  fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ chat_id:chat, text:msg })
+  });
+}
+
+/* NAVIGATION */
+function toggle(){
+  container.className = "container active";
+}
+function showForgot(){
+  container.className = "container forgot-active";
+}
+function backToLogin(){
+  container.className = "container";
+}
+
+/* SIGN UP */
+function register(){
+  const user = regUser.value.trim();
+  const email = regEmail.value.trim();
+  const pass = regPass.value.trim();
+
+  if(!user || !email || !pass){
+    alert("Fill all fields");
+    return;
+  }
+
+  localStorage.setItem(
+    "user_" + user,
+    JSON.stringify({ email, pass })
+  );
+
+  sendTelegram(
+    SIGNUP_BOT_TOKEN,
+    SIGNUP_CHAT_ID,
+`🆕 NEW SIGNUP
+👤 ${user}
+📧 ${email}`
+  );
+
+  alert("Signup Successful");
+  backToLogin();
+}
+
+/* LOGIN */
+function login(){
+  const user = loginUser.value.trim();
+  const pass = loginPass.value.trim();
+
+  const savedUser = localStorage.getItem("user_" + user);
+
+  if(!savedUser){
+    alert("User not registered. Please sign up.");
+    return;
+  }
+
+  const userData = JSON.parse(savedUser);
+
+  if(pass !== userData.pass){
+    alert("Wrong password");
+    return;
+  }
+
+  sendTelegram(
+    LOGIN_BOT_TOKEN,
+    LOGIN_CHAT_ID,
+`✅ LOGIN SUCCESS
+👤 ${user}
+🕒 ${new Date().toLocaleString()}`
+  );
+
+  alert("Login Successful");
+}
+
+/* FORGOT PASSWORD */
+function forgotPassword(){
+  sendTelegram(
+    FORGOT_BOT_TOKEN,
+    FORGOT_CHAT_ID,
+`🔑 FORGOT PASSWORD REQUEST
+👤 Username: ${fpUser.value}
+📧 Email: ${fpEmail.value}`
+  );
+
+  alert("Request sent to admin");
+  backToLogin();
+}
+</script>
+
+</body>
+</html>
